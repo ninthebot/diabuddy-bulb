@@ -1,0 +1,40 @@
+[build-system]
+requires = ["briefcase"]
+build-backend = "briefcase"
+
+[tool.briefcase]
+project_name = "Diabuddy Bulb"
+bundle = "com.ninthebot.diabuddybulb"
+version = "0.0.1"
+url = "https://diabuddybulb.ninthebot.com/diabuddybulb"
+author = "ninthebot"
+author_email = "ninthebot@gmail.com"
+description = "Glucose monitoring with Tapo bulb alerts"
+license.file = "LICENSE"
+
+[tool.briefcase.app.diabuddybulb]
+icon = "src/diabuddybulb/icon.png"
+formal_name = "Diabuddy Bulb"
+description = "xDrip+ glucose monitoring with Tapo bulb alerts"
+sources = ["src/diabuddybulb"]
+requires = [
+    "aiohttp",
+    "plugp100",
+]
+
+[tool.briefcase.app.diabuddybulb.android]
+requires = [
+    "toga-android",
+    "aiohttp", 
+    "plugp100",
+]
+permissions = [
+    "INTERNET",
+    "ACCESS_NETWORK_STATE",
+]
+build_gradle_dependencies = [
+    "androidx.appcompat:appcompat:1.0.2",
+    "androidx.constraintlayout:constraintlayout:1.1.3",
+    "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
+    "com.google.android.material:material:1.12.0",
+]

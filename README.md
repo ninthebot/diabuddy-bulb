@@ -56,16 +56,9 @@ briefcase build android
 | 70-180 mg/dL | Green | Normal |
 | > 180 mg/dL | Purple | High |
 
-## Project Structure
-```bash
-diabuddy-bulb/
-├── src/diabuddybulb/
-│ ├── main.py # Main application
-│ └── resources/ # App icons
-├── requirements.txt
-├── pyproject.toml
-└── README.md
-```
+## Languages
+
+English, Spanish, French, Basque
 
 ## Contributing
 

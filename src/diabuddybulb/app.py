@@ -73,7 +73,9 @@ class DiabuddyBulb(toga.App):
             "yellow": "#ffe08c",
             "green": "#00aa00",
             "orange": "#ffaa00",
-            "red": "#ff4444"
+            "red": "#ff4444",
+            "light_pink": "#ffb6c1",
+            "purple": "#9370db"
         }
         
     def setup_translations(self):
@@ -112,9 +114,9 @@ class DiabuddyBulb(toga.App):
                 
                 # Alert levels
                 "alert_critical_low": "🔴 CRITICAL LOW",
-                "alert_low": "🟡 LOW",
+                "alert_low": "🟣 LOW",
                 "alert_normal": "🟢 NORMAL", 
-                "alert_high": "🟣 HIGH",
+                "alert_high": "🟡 HIGH",
                 
                 # Alert dialogs
                 "configure_first": "Configure Tapo settings first",
@@ -153,9 +155,9 @@ class DiabuddyBulb(toga.App):
                 "status_checking": "Comprobando...",
                 "status_check_failed": "Comprobación Fallida",
                 "alert_critical_low": "🔴 BAJA CRÍTICA",
-                "alert_low": "🟡 BAJA",
+                "alert_low": "🟣 BAJA",
                 "alert_normal": "🟢 NORMAL", 
-                "alert_high": "🟣 ALTA",
+                "alert_high": "🟡 ALTA",
                 "configure_first": "Configure primero los Ajustes",
                 "settings_saved": "¡Ajustes guardados!",
                 "monitoring_started": "Monitoreo iniciado",
@@ -167,13 +169,13 @@ class DiabuddyBulb(toga.App):
                 "could_not_get_glucose": "❌ No se pudo obtener la lectura de glucosa"
             },
             'fr': {
-                "start_monitoring": "Démarrer la Surveillance",
-                "stop_monitoring": "Arrêter la Surveillance", 
+                "start_monitoring": "Démarrer Surveillance",
+                "stop_monitoring": "Arrêter Surveillance", 
                 "check_now": "Vérifier Maintenant",
-                "test_connections": "Tester les Connexions",
-                "save_settings": "Enregistrer les Paramètres",
-                "show_settings": "⚙️ Afficher les Paramètres", 
-                "hide_settings": "⬆️ Masquer les Paramètres",
+                "test_connections": "Tester Connexions",
+                "save_settings": "Enregistrer Paramètres",
+                "show_settings": "⚙️ Afficher Paramètres", 
+                "hide_settings": "⬆️ Masquer Paramètres",
                 "help_button": "❓ Aide",
                 "settings_title": "Paramètres de l'Ampoule Tapo",
                 "email_label": "Email:",
@@ -192,9 +194,9 @@ class DiabuddyBulb(toga.App):
                 "status_checking": "Vérification...",
                 "status_check_failed": "Échec de la Vérification",
                 "alert_critical_low": "🔴 CRITIQUEMENT BAS",
-                "alert_low": "🟡 BAS",
+                "alert_low": "🟣 BAS",
                 "alert_normal": "🟢 NORMAL", 
-                "alert_high": "🟣 ÉLEVÉ",
+                "alert_high": "🟡 ÉLEVÉ",
                 "configure_first": "Configurez d'abord les paramètres Tapo",
                 "settings_saved": "Paramètres enregistrés !",
                 "monitoring_started": "Surveillance démarrée",
@@ -231,9 +233,9 @@ class DiabuddyBulb(toga.App):
                 "status_checking": "Egiaztatzen...",
                 "status_check_failed": "Egiaztapenak huts egin du",
                 "alert_critical_low": "🔴 KRITIKOKI BAXUA",
-                "alert_low": "🟡 BAXUA",
+                "alert_low": "🟣 BAXUA",
                 "alert_normal": "🟢 NORMALA",
-                "alert_high": "🟣 ALTUA",
+                "alert_high": "🟡 ALTUA",
                 "configure_first": "Konfigura itzazu lehendabizi ezarpenak",
                 "settings_saved": "Gordetako ezarpenak!",
                 "monitoring_started": "Monitorizazioa hasita",
@@ -590,8 +592,8 @@ class DiabuddyBulb(toga.App):
                 style=Pack(
                     padding=10,
                     margin_bottom=5,
-                    background_color=self.colors["teal"] if lang_code == self.current_language else self.colors["yellow"],
-                    color=self.colors["dark_blue"],
+                    background_color=self.colors["dark_blue"] if lang_code == self.current_language else self.colors["yellow"],
+                    color=self.colors["cream"] if lang_code == self.current_language else self.colors["dark_blue"],
                     font_family="sans-serif",
                     font_size=14
                 )
@@ -607,8 +609,8 @@ class DiabuddyBulb(toga.App):
                 style=Pack(
                     padding=10,
                     margin_bottom=5,
-                    background_color=self.colors["teal"] if lang_code == self.current_language else self.colors["yellow"],
-                    color=self.colors["dark_blue"],
+                    background_color=self.colors["dark_blue"] if lang_code == self.current_language else self.colors["yellow"],
+                    color=self.colors["cream"] if lang_code == self.current_language else self.colors["dark_blue"],
                     font_family="sans-serif",
                     font_size=14
                 )
@@ -756,9 +758,9 @@ class DiabuddyBulb(toga.App):
 
 🎨 SIGNIFICADO DE COLORES:
 🔴 ROJO: Críticamente Baja (<50) - ¡Emergencia!
-🟡 AMARILLO: Baja (50-70) - ¡Necesita atención!
+🟣 ROSA: Baja (50-70) - ¡Necesita atención!
 🟢 VERDE: Normal (70-180) - ¡Todo bien!
-🟣 MORADO: Alta (>180) - ¡Necesita atención!
+🟡 AMARILLO: Alta (>180) - ¡Necesita atención!
 
 🔧 RESOLUCIÓN DE PROBLEMAS:
 
@@ -814,9 +816,9 @@ Versión 0.0.1 - Hecho con ❤️ para familias con diabetes
 
 🎨 SIGNIFICATION DES COULEURS:
 🔴 ROUGE: Critique Bas (<50) - Urgence!
-🟡 JAUNE: Bas (50-70) - Attention nécessaire!
+🟣 ROSE: Bas (50-70) - Attention nécessaire!
 🟢 VERT: Normal (70-180) - Tout va bien!
-🟣 VIOLET: Élevé (>180) - Attention nécessaire!
+🟡 JAUNE: Élevé (>180) - Attention nécessaire!
 
 🔧 DÉPANNAGE:
 
@@ -872,9 +874,9 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 
 🎨 KOLOREEN ESANAHIA:
 🔴 GORRIA: Kritikoki Baxua (< 50) - Larrialdia!
-🟡 HORIA: Baxua (50-70) - Arreta behar da!
+🟣 ARROSA: Baxua (50-70) - Arreta behar da!
 🟢 BERDEA: Normala (70-180) - Dena ondo!
-🟣 MOREA: Altua (>180) - Arreta behar da!
+🟡 HORIA: Altua (>180) - Arreta behar da!
 
 🔧 ARAZOEN EBAZTEA: 
 
@@ -930,9 +932,9 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 
 🎨 COLOR MEANINGS:
 🔴 RED: Critical Low (<50) - Emergency!
-🟡 YELLOW: Low (50-70) - Needs attention
+🟣 PINK: Low (50-70) - Needs attention
 🟢 GREEN: Normal (70-180) - All good!
-🟣 PURPLE: High (>180) - Needs attention
+🟡 YELLOW: High (>180) - Needs attention
 
 🔧 TROUBLESHOOTING:
 
@@ -1043,12 +1045,12 @@ Version 0.0.1 - Made with ❤️ for diabetes families
                     # Turn on and cycle through colors with matching icon changes
                     await self.tapo_device.turn_on()
                     
-                    # Color demo with icon changes
+                    # Color demo with icon changes - UPDATED COLOR MAPPING
                     color_sequence = [
-                        (0, 100, "critical"),    # Red - Critical
-                        (60, 100, "low"),        # Yellow - Low
-                        (120, 100, "normal"),    # Green - Normal
-                        (270, 100, "high")       # Purple - High
+                        (0, 100, "critical"),    # Red - Critical (<50)
+                        (350, 50, "low"),        # Light Pink - Low (50-70)
+                        (120, 100, "normal"),    # Green - Normal (70-180)
+                        (60, 100, "high")        # Yellow - High (>180)
                     ]
                     
                     for hue, saturation, status in color_sequence:
@@ -1187,17 +1189,17 @@ Version 0.0.1 - Made with ❤️ for diabetes families
             self.monitoring_task.cancel()
     
     async def update_bulb_color(self, glucose_value):
-        """Update bulb color"""
+        """Update bulb color with new mapping: <50 red, 50-70 light pink, 70-180 green, >180 yellow"""
         if not self.tapo_device:
             return
             
         try:
             alert_level = self.get_alert_level(glucose_value)
             color_map = {
-                "critical": (0, 100),
-                "low": (60, 100),
-                "normal": (120, 100),
-                "high": (270, 100)
+                "critical": (0, 100),      # Red for <50
+                "low": (350, 50),          # Light Pink for 50-70 (hue 350 = pinkish, saturation 50 = lighter)
+                "normal": (120, 100),      # Green for 70-180
+                "high": (60, 100)          # Yellow for >180
             }
             hue, saturation = color_map.get(alert_level, (120, 100))
             await self.tapo_device.turn_on()

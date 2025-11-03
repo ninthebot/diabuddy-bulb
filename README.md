@@ -51,10 +51,10 @@ briefcase build android
 
 | Glucose Range | Color | Status |
 |---------------|-------|--------|
-| < 50 mg/dL | Red | Critical Low |
-| 50-70 mg/dL | Yellow | Low |
-| 70-180 mg/dL | Green | Normal |
-| > 180 mg/dL | Purple | High |
+| < 50 mg/dL or specified by user | Red | Critical Low |
+| 50-70 mg/dL or specified by user | Pink | Low |
+| 70-180 mg/dL or specified by user | Green | Normal |
+| > 180 mg/dL or specified by user | Yellow | High |
 
 ## Languages
 

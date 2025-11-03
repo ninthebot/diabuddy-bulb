@@ -42,12 +42,18 @@ class DiabuddyBulb(toga.App):
         self.tapo_device = None
         self.is_monitoring = False
         self.monitoring_task = None
+        self.bulb_is_on = False
         
         # Settings with defaults
         self.tapo_email = ""
         self.tapo_password = ""
         self.tapo_ip = ""
         self.check_interval = 100
+        
+        # Glucose thresholds with defaults
+        self.critical_low_threshold = 50
+        self.low_threshold = 70
+        self.high_threshold = 180
         
         # Settings state
         self.settings_visible = False
@@ -78,6 +84,10 @@ class DiabuddyBulb(toga.App):
             "purple": "#9370db"
         }
         
+        # UI components that need to be preserved
+        self.main_box = None
+        self.main_scroll = None
+        
     def setup_translations(self):
         """Define translations for all languages"""
         self.translations = {
@@ -91,6 +101,8 @@ class DiabuddyBulb(toga.App):
                 "show_settings": "⚙️ Show Settings", 
                 "hide_settings": "⬆️ Hide Settings",
                 "help_button": "❓ Help",
+                "turn_bulb_on": "💡 Turn Bulb On",
+                "turn_bulb_off": "💡 Turn Bulb Off",
                 
                 # Labels
                 "settings_title": "Tapo Bulb Settings",
@@ -101,6 +113,10 @@ class DiabuddyBulb(toga.App):
                 "glucose_status": "Glucose: {}",
                 "direction_status": "Direction: {}",
                 "alert_status": "Status: {}",
+                "thresholds_title": "Glucose Thresholds",
+                "critical_low_label": "Critical Low:",
+                "low_label": "Low:",
+                "high_label": "High:",
                 
                 # Status messages
                 "bulb_connected": "💡 Bulb: Connected",
@@ -111,6 +127,8 @@ class DiabuddyBulb(toga.App):
                 "status_testing": "Testing connections...",
                 "status_checking": "Checking...",
                 "status_check_failed": "Check Failed",
+                "bulb_on": "Bulb: On",
+                "bulb_off": "Bulb: Off",
                 
                 # Alert levels
                 "alert_critical_low": "🔴 CRITICAL LOW",
@@ -127,7 +145,18 @@ class DiabuddyBulb(toga.App):
                 "check_complete": "Check complete: {}",
                 "language_changed": "Language changed to {}",
                 "start_monitoring_first": "Please start monitoring first",
-                "could_not_get_glucose": "❌ Could not get glucose reading"
+                "could_not_get_glucose": "❌ Could not get glucose reading",
+                "threshold_saved": "Thresholds saved!",
+                "bulb_turned_on": "Bulb turned on",
+                "bulb_turned_off": "Bulb turned off",
+                "bulb_control_failed": "Failed to control bulb",
+                
+                # Color meanings
+                "color_meanings_title": "🎨 COLOR MEANINGS:",
+                "critical_low_color": "🔴 RED: Critical Low (<{}) - Emergency!",
+                "low_color": "🟣 PINK: Low ({}-{}) - Needs attention",
+                "normal_color": "🟢 GREEN: Normal ({}-{}) - All good!",
+                "high_color": "🟡 YELLOW: High (> {}) - Needs attention",
             },
             'es': {
                 "start_monitoring": "Iniciar Monitoreo",
@@ -138,6 +167,8 @@ class DiabuddyBulb(toga.App):
                 "show_settings": "⚙️ Mostrar Ajustes", 
                 "hide_settings": "⬆️ Ocultar Ajustes",
                 "help_button": "❓ Ayuda",
+                "turn_bulb_on": "💡 Encender Bombilla",
+                "turn_bulb_off": "💡 Apagar Bombilla",
                 "settings_title": "Configuración Bombilla Tapo",
                 "email_label": "Correo:",
                 "password_label": "Contraseña:",
@@ -146,6 +177,10 @@ class DiabuddyBulb(toga.App):
                 "glucose_status": "Glucosa: {}",
                 "direction_status": "Dirección: {}",
                 "alert_status": "Estado: {}",
+                "thresholds_title": "Umbrales de Glucosa",
+                "critical_low_label": "Baja Crítica:",
+                "low_label": "Baja:",
+                "high_label": "Alta:",
                 "bulb_connected": "💡 Bombilla: Conectada",
                 "bulb_failed": "💡 Bombilla: Conexión Fallida",
                 "status_ready": "Listo",
@@ -154,6 +189,8 @@ class DiabuddyBulb(toga.App):
                 "status_testing": "Probando conexiones...",
                 "status_checking": "Comprobando...",
                 "status_check_failed": "Comprobación Fallida",
+                "bulb_on": "Bombilla: Encendida",
+                "bulb_off": "Bombilla: Apagada",
                 "alert_critical_low": "🔴 BAJA CRÍTICA",
                 "alert_low": "🟣 BAJA",
                 "alert_normal": "🟢 NORMAL", 
@@ -165,8 +202,17 @@ class DiabuddyBulb(toga.App):
                 "connections_working": "✅ ¡Conexiones funcionando!",
                 "check_complete": "Comprobación completa: {}",
                 "language_changed": "Idioma cambiado a {}",
-                "start_monitoring_first": "Por favor inicie el monitoreo primero",
-                "could_not_get_glucose": "❌ No se pudo obtener la lectura de glucosa"
+                "start_monitoring_first": "Inicia el monitoreo",
+                "could_not_get_glucose": "❌ No se pudo obtener la lectura de glucosa",
+                "threshold_saved": "¡Umbrales guardados!",
+                "bulb_turned_on": "Bombilla encendida",
+                "bulb_turned_off": "Bombilla apagada",
+                "bulb_control_failed": "Error al controlar la bombilla",
+                "color_meanings_title": "🎨 SIGNIFICADO DE COLORES:",
+                "critical_low_color": "🔴 ROJO: Baja Crítica (<{}) - ¡Emergencia!",
+                "low_color": "🟣 ROSA: Baja ({}-{}) - ¡Necesita atención!",
+                "normal_color": "🟢 VERDE: Normal ({}-{}) - ¡Todo bien!",
+                "high_color": "🟡 AMARILLO: Alta (> {}) - ¡Necesita atención!",
             },
             'fr': {
                 "start_monitoring": "Démarrer Surveillance",
@@ -177,6 +223,8 @@ class DiabuddyBulb(toga.App):
                 "show_settings": "⚙️ Afficher Paramètres", 
                 "hide_settings": "⬆️ Masquer Paramètres",
                 "help_button": "❓ Aide",
+                "turn_bulb_on": "💡 Allumer l'Ampoule",
+                "turn_bulb_off": "💡 Éteindre l'Ampoule",
                 "settings_title": "Paramètres de l'Ampoule Tapo",
                 "email_label": "Email:",
                 "password_label": "Mot de passe:",
@@ -185,6 +233,10 @@ class DiabuddyBulb(toga.App):
                 "glucose_status": "Glucose: {}",
                 "direction_status": "Direction: {}",
                 "alert_status": "Statut: {}",
+                "thresholds_title": "Seuils de Glucose",
+                "critical_low_label": "Critiquement Bas:",
+                "low_label": "Bas:",
+                "high_label": "Élevé:",
                 "bulb_connected": "💡 Ampoule: Connectée",
                 "bulb_failed": "💡 Ampoule: Échec de Connexion",
                 "status_ready": "Prêt",
@@ -193,29 +245,42 @@ class DiabuddyBulb(toga.App):
                 "status_testing": "Test des connexions...",
                 "status_checking": "Vérification...",
                 "status_check_failed": "Échec de la Vérification",
+                "bulb_on": "Ampoule: Allumée",
+                "bulb_off": "Ampoule: Éteinte",
                 "alert_critical_low": "🔴 CRITIQUEMENT BAS",
                 "alert_low": "🟣 BAS",
                 "alert_normal": "🟢 NORMAL", 
                 "alert_high": "🟡 ÉLEVÉ",
                 "configure_first": "Configurez d'abord les paramètres Tapo",
-                "settings_saved": "Paramètres enregistrés !",
+                "settings_saved": "Paramètres enregistrés!",
                 "monitoring_started": "Surveillance démarrée",
                 "monitoring_stopped": "Surveillance arrêtée",
                 "connections_working": "✅ Connexions fonctionnelles !",
                 "check_complete": "Vérification terminée: {}",
                 "language_changed": "Langue changée en {}",
                 "start_monitoring_first": "Veuillez d'abord démarrer la surveillance",
-                "could_not_get_glucose": "❌ Impossible d'obtenir la lecture de glucose"
+                "could_not_get_glucose": "❌ Impossible d'obtenir la lecture de glucose",
+                "threshold_saved": "Seuils enregistrés !",
+                "bulb_turned_on": "Ampoule allumée",
+                "bulb_turned_off": "Ampoule éteinte",
+                "bulb_control_failed": "Échec du contrôle de l'ampoule",
+                "color_meanings_title": "🎨 SIGNIFICATION DES COULEURS:",
+                "critical_low_color": "🔴 ROUGE: Critiquement Bas (<{}) - Urgence!",
+                "low_color": "🟣 ROSE: Bas ({}-{}) - Attention nécessaire!",
+                "normal_color": "🟢 VERT: Normal ({}-{}) - Tout va bien!",
+                "high_color": "🟡 JAUNE: Élevé (> {}) - Attention nécessaire!",
             },
             'eu': {
                 "start_monitoring": "Monitorizazioa hasi",
-                "stop_monitoring": "Gelditu monitorizazioa",
-                "check_now": "Egiaztatu orain",
+                "stop_monitoring": "Mnitorizazioa gelditu",
+                "check_now": "Begiratu orain",
                 "test_connections": "Konexioak probatu",
                 "save_settings": "Ezarpenak gorde",
                 "show_settings": "⚙️Ezarpenak erakutsi",
                 "hide_settings": "⬆️Ezarpenak ezkutatu",
                 "help_button": "❓ Laguntza",
+                "turn_bulb_on": "💡 Bonbilla piztu",
+                "turn_bulb_off": "💡 Bonbilla itzali",
                 "settings_title": "Tapo bonbillaren konfigurazioa",
                 "email_label": "Posta:",
                 "password_label": "Pasahitza:",
@@ -224,28 +289,42 @@ class DiabuddyBulb(toga.App):
                 "glucose_status": "Glukosa: {}",
                 "direction_status": "Norabidea: {}",
                 "alert_status": "Egoera: {}",
+                "thresholds_title": "Glukosaren Atariak",
+                "critical_low_label": "Kritikoki Baxua:",
+                "low_label": "Baxua:",
+                "high_label": "Altua:",
                 "bulb_connected": "💡 Bonbilla: konektatua",
                 "bulb_failed": "💡 Bonbilla: konexio okerra",
                 "status_ready": "Prest",
                 "status_monitoring": "Monitorizazio aktiboa",
                 "status_stopped": "Gelditutako monitorizazioa",
-                "status_testing": "Konexioak probatzen...",
+                "status_testing": "Konexioak frogatzen...",
                 "status_checking": "Egiaztatzen...",
                 "status_check_failed": "Egiaztapenak huts egin du",
+                "bulb_on": "Bonbilla: Piztuta",
+                "bulb_off": "Bonbilla: Itzalita",
                 "alert_critical_low": "🔴 KRITIKOKI BAXUA",
                 "alert_low": "🟣 BAXUA",
                 "alert_normal": "🟢 NORMALA",
                 "alert_high": "🟡 ALTUA",
-                "configure_first": "Konfigura itzazu lehendabizi ezarpenak",
+                "configure_first": "Ezarpenak konfiguratu",
                 "settings_saved": "Gordetako ezarpenak!",
                 "monitoring_started": "Monitorizazioa hasita",
                 "monitoring_stopped": "Geldiarazitako monitorizazioa",
                 "connections_working": "✅ Konexioak funtzionatzen!",
                 "check_complete": "Egiaztapen osoa: {}",
                 "language_changed": "Hizkuntza {} ra aldatu da",
-                "start_monitoring_first": "Mesedez, hasi lehenengo monitorizazioa",
-                "could_not_get_glucose": "❌ Ezin izan da glukosa-irakurketa lortu"
-
+                "start_monitoring_first": "Mesedez, hasi monitorizazioa",
+                "could_not_get_glucose": "❌ Ezin izan da glukosa-irakurketa lortu",
+                "threshold_saved": "Atariak gordeta!",
+                "bulb_turned_on": "Bonbilla piztuta",
+                "bulb_turned_off": "Bonbilla itzalita",
+                "bulb_control_failed": "Bonbilla kontrolatzean huts egin da",
+                "color_meanings_title": "🎨 KOLOREEN ESANAHIA:",
+                "critical_low_color": "🔴 GORRIA: Kritikoki Baxua (<{}) - Larrialdia!",
+                "low_color": "🟣 ARROSA: Baxua ({}-{}) - Arreta behar da!",
+                "normal_color": "🟢 BERDEA: Normala ({}-{}) - Dena ondo!",
+                "high_color": "🟡 HORIA: Altua (> {}) - Arreta behar da!",
             }
         }
     
@@ -275,8 +354,8 @@ class DiabuddyBulb(toga.App):
         # Create main box that goes inside scroll container
         self.main_box = toga.Box(style=Pack(direction=COLUMN, padding=0, flex=1))
         
-        # Build the initial UI (without settings)
-        self.build_ui()
+        # Build the initial UI
+        self.build_main_ui()
         
         # Set the scroll container content
         self.main_scroll.content = self.main_box
@@ -312,17 +391,11 @@ class DiabuddyBulb(toga.App):
         }
         return icon_map.get(status, "icon_ready.png")
 
-    def build_ui(self):
-        """Build the UI - completely replace content"""
-        # Clear the main box
-        if hasattr(self, 'current_children'):
-            for child in self.current_children:
-                try:
-                    self.main_box.remove(child)
-                except:
-                    pass
-        
-        self.current_children = []
+    def build_main_ui(self):
+        """Build the main UI components"""
+        # Clear existing content
+        if self.main_box.children:
+            self.main_box.remove(*self.main_box.children)
         
         # Header with icon and title
         header_box = toga.Box(
@@ -356,7 +429,6 @@ class DiabuddyBulb(toga.App):
         header_box.add(title_label)
         
         self.main_box.add(header_box)
-        self.current_children.append(header_box)
         
         # Status Section
         status_box = toga.Box(
@@ -405,8 +477,10 @@ class DiabuddyBulb(toga.App):
             )
         )
         
+        # Bulb status with on/off state
+        bulb_status_text = self.t("bulb_on") if self.bulb_is_on else self.t("bulb_off")
         self.bulb_status = toga.Label(
-            self.t("bulb_failed"),
+            bulb_status_text,
             style=Pack(
                 font_size=14, 
                 text_align="center", 
@@ -421,9 +495,8 @@ class DiabuddyBulb(toga.App):
         status_box.add(self.bulb_status)
         
         self.main_box.add(status_box)
-        self.current_children.append(status_box)
         
-        # Control Buttons
+        # Control Buttons - REORDERED: Settings is now under Bulb and Help
         button_box = toga.Box(
             style=Pack(
                 direction=COLUMN, 
@@ -464,12 +537,12 @@ class DiabuddyBulb(toga.App):
         monitor_row.add(self.monitor_btn)
         monitor_row.add(check_btn)
         
-        # Settings button
-        settings_row = toga.Box(style=Pack(direction=ROW, padding_bottom=10))
-        settings_btn_text = self.t("hide_settings") if self.settings_visible else self.t("show_settings")
-        self.settings_btn = toga.Button(
-            settings_btn_text,
-            on_press=self.toggle_settings,
+        # Bulb control and Help buttons
+        bulb_help_row = toga.Box(style=Pack(direction=ROW, padding_bottom=10))
+        bulb_btn_text = self.t("turn_bulb_off") if self.bulb_is_on else self.t("turn_bulb_on")
+        self.bulb_btn = toga.Button(
+            bulb_btn_text,
+            on_press=self.toggle_bulb,
             style=Pack(
                 flex=1, 
                 padding_right=5,
@@ -493,14 +566,29 @@ class DiabuddyBulb(toga.App):
                 padding_bottom=10
             )
         )
-        settings_row.add(self.settings_btn)
-        settings_row.add(help_btn)
+        bulb_help_row.add(self.bulb_btn)
+        bulb_help_row.add(help_btn)
+        
+        # Settings button (now under Bulb and Help, same cream color)
+        settings_btn_text = self.t("hide_settings") if self.settings_visible else self.t("show_settings")
+        self.settings_btn = toga.Button(
+            settings_btn_text,
+            on_press=self.toggle_settings,
+            style=Pack(
+                padding=15,
+                background_color=self.colors["cream"],
+                color=self.colors["dark_blue"],
+                font_family="sans-serif",
+                padding_top=10,
+                padding_bottom=10
+            )
+        )
         
         button_box.add(monitor_row)
-        button_box.add(settings_row)
+        button_box.add(bulb_help_row)
+        button_box.add(self.settings_btn)
         
         self.main_box.add(button_box)
-        self.current_children.append(button_box)
         
         # Add settings section if visible
         if self.settings_visible:
@@ -565,6 +653,62 @@ class DiabuddyBulb(toga.App):
             style=Pack(flex=1)
         )
         ip_box.add(self.ip_input)
+        
+        # Glucose Thresholds Section
+        thresholds_title = toga.Label(
+            self.t("thresholds_title"),
+            style=Pack(
+                padding_bottom=10, 
+                font_size=16, 
+                font_weight="bold",
+                color=self.colors["dark_blue"],
+                font_family="sans-serif"
+            )
+        )
+        settings_section.add(thresholds_title)
+        
+        # Critical Low Threshold
+        critical_low_box = toga.Box(style=Pack(direction=ROW, padding_bottom=10))
+        critical_low_box.add(toga.Label(
+            self.t("critical_low_label"), 
+            style=Pack(width=100, color=self.colors["dark_blue"], font_family="sans-serif")
+        ))
+        self.critical_low_input = toga.TextInput(
+            value=str(self.critical_low_threshold),
+            placeholder="50",
+            style=Pack(flex=1)
+        )
+        critical_low_box.add(self.critical_low_input)
+        
+        # Low Threshold
+        low_box = toga.Box(style=Pack(direction=ROW, padding_bottom=10))
+        low_box.add(toga.Label(
+            self.t("low_label"), 
+            style=Pack(width=100, color=self.colors["dark_blue"], font_family="sans-serif")
+        ))
+        self.low_input = toga.TextInput(
+            value=str(self.low_threshold),
+            placeholder="70",
+            style=Pack(flex=1)
+        )
+        low_box.add(self.low_input)
+        
+        # High Threshold
+        high_box = toga.Box(style=Pack(direction=ROW, padding_bottom=20))
+        high_box.add(toga.Label(
+            self.t("high_label"), 
+            style=Pack(width=100, color=self.colors["dark_blue"], font_family="sans-serif")
+        ))
+        self.high_input = toga.TextInput(
+            value=str(self.high_threshold),
+            placeholder="180",
+            style=Pack(flex=1)
+        )
+        high_box.add(self.high_input)
+        
+        settings_section.add(critical_low_box)
+        settings_section.add(low_box)
+        settings_section.add(high_box)
     
         # Language selector - 2-column layout
         language_box = toga.Box(style=Pack(direction=COLUMN, padding_bottom=20))
@@ -579,7 +723,7 @@ class DiabuddyBulb(toga.App):
     
         # Split languages into two columns
         languages_list = list(self.languages.items())
-        mid_point = (len(languages_list) + 1) // 2  # +1 to handle odd numbers
+        mid_point = (len(languages_list) + 1) // 2
     
         left_column = toga.Box(style=Pack(direction=COLUMN, flex=1, padding_right=5))
         right_column = toga.Box(style=Pack(direction=COLUMN, flex=1, padding_left=5))
@@ -663,7 +807,6 @@ class DiabuddyBulb(toga.App):
     
         # Add to main box
         self.main_box.add(settings_section)
-        self.current_children.append(settings_section)
 
     def select_language(self, widget):
         """Select language from button group"""
@@ -673,7 +816,7 @@ class DiabuddyBulb(toga.App):
         self.save_settings_to_file()
         
         # Rebuild UI with new language
-        self.build_ui()
+        self.build_main_ui()
         
         # Show confirmation
         lang_name = self.languages.get(self.current_language, self.current_language)
@@ -693,6 +836,10 @@ class DiabuddyBulb(toga.App):
                         self.tapo_password = settings.get('tapo_password', '')
                         self.tapo_ip = settings.get('tapo_ip', '')
                         self.current_language = settings.get('language', 'en')
+                        # Load glucose thresholds
+                        self.critical_low_threshold = settings.get('critical_low_threshold', 50)
+                        self.low_threshold = settings.get('low_threshold', 70)
+                        self.high_threshold = settings.get('high_threshold', 180)
         except Exception as e:
             print(f"Error loading settings: {e}")
 
@@ -707,7 +854,11 @@ class DiabuddyBulb(toga.App):
                     'tapo_email': self.tapo_email,
                     'tapo_password': self.tapo_password,
                     'tapo_ip': self.tapo_ip,
-                    'language': self.current_language
+                    'language': self.current_language,
+                    # Save glucose thresholds
+                    'critical_low_threshold': self.critical_low_threshold,
+                    'low_threshold': self.low_threshold,
+                    'high_threshold': self.high_threshold
                 }
                 
                 os.makedirs(app_dir, exist_ok=True)
@@ -720,8 +871,39 @@ class DiabuddyBulb(toga.App):
     def toggle_settings(self, widget):
         """Toggle settings section visibility"""
         self.settings_visible = not self.settings_visible
-        self.build_ui()
+        self.build_main_ui()
     
+    def toggle_bulb(self, widget):
+        """Toggle bulb on/off"""
+        async def _toggle_bulb():
+            if not all([self.tapo_email, self.tapo_password, self.tapo_ip]):
+                self.show_alert(self.t("configure_first"), is_error=True)
+                return
+                
+            if not await self.initialize_tapo():
+                self.show_alert(self.t("bulb_control_failed"), is_error=True)
+                return
+                
+            try:
+                if self.bulb_is_on:
+                    await self.tapo_device.turn_off()
+                    self.bulb_is_on = False
+                    self.bulb_status.text = self.t("bulb_off")
+                    self.bulb_btn.text = self.t("turn_bulb_on")
+                    self.show_alert("✅ " + self.t("bulb_turned_off"))
+                else:
+                    await self.tapo_device.turn_on()
+                    self.bulb_is_on = True
+                    self.bulb_status.text = self.t("bulb_on")
+                    self.bulb_btn.text = self.t("turn_bulb_off")
+                    self.show_alert("✅ " + self.t("bulb_turned_on"))
+                    
+            except Exception as e:
+                self.show_alert(self.t("bulb_control_failed"), is_error=True)
+                print(f"Error controlling bulb: {e}")
+        
+        asyncio.create_task(_toggle_bulb())
+
     def show_about(self, widget):
         """Show instructions"""
         about_text = self.get_about_text()
@@ -729,13 +911,25 @@ class DiabuddyBulb(toga.App):
     
     def get_about_text(self):
         """Get about text in current language"""
+        # Build color meanings using translations
+        thresholds_info = f"""
+{self.t("color_meanings_title")}
+{self.t("critical_low_color", self.critical_low_threshold)}
+{self.t("low_color", self.critical_low_threshold, self.low_threshold)}
+{self.t("normal_color", self.low_threshold, self.high_threshold)}
+{self.t("high_color", self.high_threshold)}
+"""
+        
         if self.current_language == 'es':
-            return """
+            return f"""
 🌈 QUÉ HACE ESTA APP:
 • Se conecta a xDrip+ para obtener lecturas de glucosa
 • Cambia el color de tu bombilla Tapo según los niveles de glucosa
 • Proporciona alertas visuales para niveles bajos y altos
 • Se actualiza automáticamente cada 100 segundos
+• Control manual de encendido/apagado de la bombilla
+
+{thresholds_info}
 
 🚀 INSTRUCCIONES:
 
@@ -755,12 +949,6 @@ class DiabuddyBulb(toga.App):
 • Presiona "Probar Conexiones" para verificar que todo funciona
 • Luego presiona "Iniciar Monitoreo" para comenzar la verificación automática
 • Usa "Comprobar Ahora" para actualizaciones inmediatas durante el monitoreo
-
-🎨 SIGNIFICADO DE COLORES:
-🔴 ROJO: Críticamente Baja (<50) - ¡Emergencia!
-🟣 ROSA: Baja (50-70) - ¡Necesita atención!
-🟢 VERDE: Normal (70-180) - ¡Todo bien!
-🟡 AMARILLO: Alta (>180) - ¡Necesita atención!
 
 🔧 RESOLUCIÓN DE PROBLEMAS:
 
@@ -788,12 +976,15 @@ class DiabuddyBulb(toga.App):
 Versión 0.0.1 - Hecho con ❤️ para familias con diabetes
 """
         elif self.current_language == 'fr':
-            return """
+            return f"""
 🌈 CE QUE FAIT CETTE APPLICATION:
 • Se connecte à xDrip+ pour obtenir les lectures de glucose
 • Change la couleur de votre ampoule Tapo en fonction des niveaux de glucose
 • Fournit des alertes visuelles pour les niveaux bas et élevés
 • Se met à jour automatiquement toutes les 100 secondes
+• Contrôle manuel de l'allumage/extinction de l'ampoule
+
+{thresholds_info}
 
 🚀 INSTRUCTIONS:
 
@@ -813,12 +1004,6 @@ Versión 0.0.1 - Hecho con ❤️ para familias con diabetes
 • Appuyez sur "Tester les connexions" pour vérifier que tout fonctionne
 • Ensuite appuyez sur "Démarrer la surveillance" pour commencer la vérification automatique
 • Utilisez "Vérifier maintenant" pour des mises à jour immédiates pendant la surveillance
-
-🎨 SIGNIFICATION DES COULEURS:
-🔴 ROUGE: Critique Bas (<50) - Urgence!
-🟣 ROSE: Bas (50-70) - Attention nécessaire!
-🟢 VERT: Normal (70-180) - Tout va bien!
-🟡 JAUNE: Élevé (>180) - Attention nécessaire!
 
 🔧 DÉPANNAGE:
 
@@ -846,12 +1031,15 @@ Versión 0.0.1 - Hecho con ❤️ para familias con diabetes
 Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 """
         elif self.current_language == 'eu':
-            return """
+            return f"""
 🌈 ZER EGITEN DU APP HONEK?
 • xDrip+era konektatzen da glukosa-irakurketak lortzeko
 • Zure Tapo bonbillaren kolorea aldatzen du glukosa mailen arabera
 • Alerta bisualak ematen ditu maila baxu eta altuetarako
 • Automatikoki eguneratzen da 100 segundotik behin
+• Bonbillaren pizte eta itzaltzearen kontrola
+
+{thresholds_info}
 
 🚀 JARRAIBIDEAK:
 
@@ -859,7 +1047,7 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 • Instalatu Tapo L530E bonbilla Taporen app ofiziala erabiliz
 • Aurkitu bonbillaren IP helbidea Taporen app-an (Gailuaren Info)
 • Sartu zure eposta eta Taporen pasahitza app honetan
-• Gorde doikuntzak
+• Gorde ezarpenak
 
 2. XDRIP+ KONFIGURAZIOA:
 • xDrip+ aplikazioa ireki 
@@ -870,13 +1058,7 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 3. PROBATU ETA HASI:
 • Sakatu "Konexioak probatu" dena ondo dabilela egiaztatzeko
 • Gero, sakatu "Monitorizazioa hasi" egiaztapen automatikoa hasteko
-• Erabili "Egiaztatu orain" berehalako eguneratzeetarako monitoretzan
-
-🎨 KOLOREEN ESANAHIA:
-🔴 GORRIA: Kritikoki Baxua (< 50) - Larrialdia!
-🟣 ARROSA: Baxua (50-70) - Arreta behar da!
-🟢 BERDEA: Normala (70-180) - Dena ondo!
-🟡 HORIA: Altua (>180) - Arreta behar da!
+• Erabili "Begiratu orain" berehalako eguneratzeetarako monitoretzan
 
 🔧 ARAZOEN EBAZTEA: 
 
@@ -904,12 +1086,15 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 0.0.1 Bertsioa ❤️rekin diabetesa duten familientzat egina
 """
         else:  # English default
-            return """
+            return f"""
 🌈 WHAT THIS APP DOES:
 • Connects to xDrip+ to get glucose readings
 • Changes your Tapo bulb color based on glucose levels
 • Provides visual alerts for lows and highs
 • Updates automatically every 100 seconds
+• Manual bulb on/off control
+
+{thresholds_info}
 
 🚀 INSTRUCTIONS:
 
@@ -929,12 +1114,6 @@ Version 0.0.1 - Fait avec ❤️ pour les familles diabétiques
 • Press "Test Connections" to verify everything works
 • Then press "Start Monitoring" to begin automatic checking
 • Use "Check Now" for immediate updates while monitoring
-
-🎨 COLOR MEANINGS:
-🔴 RED: Critical Low (<50) - Emergency!
-🟣 PINK: Low (50-70) - Needs attention
-🟢 GREEN: Normal (70-180) - All good!
-🟡 YELLOW: High (>180) - Needs attention
 
 🔧 TROUBLESHOOTING:
 
@@ -1044,13 +1223,16 @@ Version 0.0.1 - Made with ❤️ for diabetes families
                 try:
                     # Turn on and cycle through colors with matching icon changes
                     await self.tapo_device.turn_on()
+                    self.bulb_is_on = True
+                    self.bulb_status.text = self.t("bulb_on")
+                    self.bulb_btn.text = self.t("turn_bulb_off")
                     
-                    # Color demo with icon changes - UPDATED COLOR MAPPING
+                    # Color demo with icon changes
                     color_sequence = [
-                        (0, 100, "critical"),    # Red - Critical (<50)
-                        (350, 50, "low"),        # Light Pink - Low (50-70)
-                        (120, 100, "normal"),    # Green - Normal (70-180)
-                        (60, 100, "high")        # Yellow - High (>180)
+                        (0, 100, "critical"),    # Red - Critical
+                        (270, 100, "low"),        # Light Pink - Low
+                        (120, 100, "normal"),    # Green - Normal
+                        (60, 100, "high")        # Yellow - High
                     ]
                     
                     for hue, saturation, status in color_sequence:
@@ -1130,29 +1312,39 @@ Version 0.0.1 - Made with ❤️ for diabetes families
         asyncio.create_task(_check_now())
     
     def get_alert_level(self, glucose_value):
-        """Determine alert level"""
-        if glucose_value < 50:
+        """Determine alert level using customizable thresholds"""
+        if glucose_value < self.critical_low_threshold:
             return "critical"
-        elif glucose_value < 70:
+        elif glucose_value < self.low_threshold:
             return "low"
-        elif glucose_value <= 180:
+        elif glucose_value <= self.high_threshold:
             return "normal"
         else:
             return "high"
     
     def save_settings(self, widget):
-        """Save settings"""
+        """Save settings including glucose thresholds"""
         try:
             self.tapo_email = self.email_input.value
             self.tapo_password = self.password_input.value
             self.tapo_ip = self.ip_input.value
+            
+            # Save glucose thresholds
+            self.critical_low_threshold = int(self.critical_low_input.value)
+            self.low_threshold = int(self.low_input.value)
+            self.high_threshold = int(self.high_input.value)
+            
+            # Validate thresholds
+            if not (0 <= self.critical_low_threshold < self.low_threshold < self.high_threshold):
+                self.show_alert("❌ Invalid thresholds! Must be: Critical Low < Low < High", is_error=True)
+                return
             
             # Save to file
             self.save_settings_to_file()
             
             self.alert_status.text = self.t("alert_status", "Settings Saved!")
             self.alert_status.style.color = self.colors["green"]
-            self.show_alert("✅ " + self.t("settings_saved"))
+            self.show_alert("✅ " + self.t("settings_saved") + "\n" + self.t("threshold_saved"))
             
         except Exception as e:
             self.show_alert(f"❌ Error saving: {str(e)}", is_error=True)
@@ -1189,20 +1381,19 @@ Version 0.0.1 - Made with ❤️ for diabetes families
             self.monitoring_task.cancel()
     
     async def update_bulb_color(self, glucose_value):
-        """Update bulb color with new mapping: <50 red, 50-70 light pink, 70-180 green, >180 yellow"""
-        if not self.tapo_device:
+        """Update bulb color based on customizable thresholds"""
+        if not self.tapo_device or not self.bulb_is_on:
             return
             
         try:
             alert_level = self.get_alert_level(glucose_value)
             color_map = {
-                "critical": (0, 100),      # Red for <50
-                "low": (350, 50),          # Light Pink for 50-70 (hue 350 = pinkish, saturation 50 = lighter)
-                "normal": (120, 100),      # Green for 70-180
-                "high": (60, 100)          # Yellow for >180
+                "critical": (0, 100),      # Red for critical low
+                "low": (270, 100),         # Light Pink for low
+                "normal": (120, 100),      # Green for normal
+                "high": (60, 100)          # Yellow for high
             }
             hue, saturation = color_map.get(alert_level, (120, 100))
-            await self.tapo_device.turn_on()
             await self.tapo_device.set_hue_saturation(hue, saturation)
         except Exception as e:
             print(f"Error updating bulb: {e}")
@@ -1220,7 +1411,7 @@ Version 0.0.1 - Made with ❤️ for diabetes families
                     self.update_status(glucose['value'], glucose['direction'], alert_level)
                     
                     if not last_glucose or abs(glucose['value'] - last_glucose['value']) > 2:
-                        if await self.initialize_tapo():
+                        if await self.initialize_tapo() and self.bulb_is_on:
                             await self.update_bulb_color(glucose['value'])
                         last_glucose = glucose
                 
